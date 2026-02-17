@@ -1,0 +1,537 @@
+A. Navigation and Route Map (Lock This In)
+
+Left Nav
+
+Dashboard (/app/dashboard)
+
+Prompts (/app/prompts)
+
+Competitors (/app/competitors)
+
+Sources (/app/sources)
+
+Search Console (/app/search-console)
+
+Gap Analysis (/app/gap-analysis)
+
+Integrations (/app/integrations)
+
+Settings (/app/settings)
+
+Guards
+
+Not authed → /auth
+
+Authed + onboarding incomplete → /onboarding
+
+Authed + onboarding complete → /app/dashboard
+
+Admin routes isolated: /admin/*
+
+Global UI consistency
+
+App Shell only on /app/* and /admin/*
+
+Auth + Onboarding use their own shell (no sidebar)
+
+B. Canonical Data Model (Frontend Contract)
+
+All pages must read from the same view-model layer (even if backend is mocked initially).
+
+Core primitives
+
+Brand (the current tenant brand)
+
+Competitor[]
+
+Prompt[] (clustered)
+
+Model[] (ChatGPT, Gemini, Perplexity, Google AI Overview)
+
+SourceDomain[]
+
+Citation[] / Mention[]
+
+TimeWindow (7d/28d/90d/custom)
+
+Derived metrics (must be computed once in a selector/service)
+
+visibilityScore (0–100)
+
+avgRank
+
+shareOfMentions
+
+aiTrafficEstimate
+
+domainAuthority
+
+promptCoveragePct
+
+competitiveDelta
+
+trend7d (delta or sparkline)
+
+confidenceBand (low/med/high)
+
+freshness (last updated timestamp)
+
+C. Global Cross-Cutting UI Controls (All /app Pages)
+
+Top Bar Controls
+
+Brand selector (if multi-brand later; for now fixed)
+
+Time window selector: 7d / 28d / 90d / Custom
+
+Baseline comparator: previous period (toggle)
+
+Data freshness: Last updated: <timestamp> + status dot
+
+Export: CSV/PDF gated by plan (Growth+)
+
+Filtering standard
+
+Model filter
+
+Competitor filter
+
+Authority range filter (for Sources)
+
+Citation frequency filter (for Sources)
+
+Prompt category filter (for Prompts)
+
+All filters must apply consistently across tables and charts on the page.
+
+D. Page Specifications
+1) Dashboard (Executive Overview)
+1.1 KPI Strip (6–8 tiles)
+
+Tiles:
+
+AI Visibility Score
+
+Rank Position (among tracked competitors)
+
+Total Prompts Tracked
+
+Active Competitors
+
+Total AI Mentions
+
+AI Traffic Estimate
+
+(Optional) Sentiment Index
+
+Prompt Coverage %
+
+Each tile shows
+
+value + delta vs baseline
+
+clickable deep link:
+
+Visibility → /app/prompts?sort=visibility
+
+Rank → /app/competitors
+
+Mentions → /app/sources?sort=citations
+
+Traffic → /app/prompts?sort=trafficImpact
+
+1.2 Competitive Visibility Comparison (Split View)
+
+Left: Ranked competitor table
+Columns:
+
+Brand
+
+Visibility Score
+
+Avg Rank
+
+Mentions
+
+AI Traffic Est.
+
+Trend (7d sparkline or delta)
+
+Right: Visibility distribution bar (stacked or grouped by model)
+
+Toggle: “Overall” vs “By model”
+
+1.3 Source Intelligence (“Where AI Gets Its Answers”)
+
+Ranked domain table:
+
+Domain
+
+DA
+
+% Citations
+
+Top Brand Benefiting
+
+Models Appearing In
+
+Your Absence (Yes/No)
+
+Actionability Tag (see Sources module tags)
+
+Row click → /app/sources/<domain> detail drilldown
+
+1.4 AI Traffic Estimates Panel
+
+Total estimate + confidence band badge
+
+Breakdown by model (table or bar)
+
+Compare vs top competitor (delta)
+
+“Assumptions” expandable disclosure (mandatory)
+
+Assumptions block must exist (avoid false certainty):
+
+estimation basis
+
+sampling rate
+
+confidence logic
+
+Acceptance criteria
+
+A user can understand “where we stand + why + what to do” in <60s.
+
+2) Prompts Performance Center
+2.1 Prompt Inventory (Table-first)
+
+Columns:
+
+Prompt Text
+
+Category
+
+Models Covered
+
+Avg Rank
+
+Visibility %
+
+Top Competitor
+
+Your Presence (Yes/No)
+
+Trend
+
+Action Priority
+
+Priority Score (required)
+
+Priority = Impact × Difficulty
+
+Show tooltip:
+
+Impact factors: volume proxy, traffic estimate, conversion intent, competitor dominance
+
+Difficulty factors: evidence gap size, source authority gap, content footprint required
+
+Filters
+
+Category
+
+Model coverage
+
+Presence yes/no
+
+Priority threshold
+
+Trend up/down
+
+2.2 Prompt Detail Drilldown (/app/prompts/<promptId>)
+
+Sections:
+
+Prompt Summary (category, intent, last updated, confidence)
+
+Brand ranking per model (table)
+
+Citation domains (ranked list + your absence flags)
+
+Missing opportunities (claim/citation gaps)
+
+Suggested content angle (mock AI assist allowed)
+
+Action buttons:
+
+“Create Answer Block”
+
+“Assign Task”
+
+“Mark as fixed”
+
+3) Competitors Module
+3.1 Tracked Competitors (/app/competitors)
+
+Table columns:
+
+Competitor
+
+Threat Score (computed)
+
+Overlap % with your prompts
+
+Domains they dominate (top 3)
+
+Visibility Score
+
+Trend 7d
+
+Row click → competitor detail.
+
+3.2 Untracked Competitor Discovery
+
+A list/table with:
+
+Competitor domain/name
+
+Risk classification (High/Medium/Low)
+
+Why classified (transparent logic)
+
+High: appears top-3 in ≥20% prompts
+
+Medium: high DA sources but low overlap
+
+Low: niche/one-off
+
+CTA: “Track Competitor” (plan-gated: starter limit, growth higher)
+
+4) Sources Module (Citation Intelligence)
+4.1 Domain-grouped table (/app/sources)
+
+Columns:
+
+Domain
+
+Authority (DA)
+
+Total Citations
+
+Unique Pages
+
+Dominant Brand
+
+Models
+
+Trend
+
+Actionability Tag
+
+Actionability tags
+
+Acquire backlink
+
+Publish competing content
+
+Partner / PR
+
+Ignore
+
+4.2 Mandatory filters
+
+AI Model
+
+Brand
+
+Authority range (slider)
+
+Citation frequency threshold
+
+4.3 Domain detail (/app/sources/<domain>)
+
+Pages cited from this domain (list)
+
+Prompts where it appears
+
+Which brands benefit
+
+“How to win this domain” recommended actions (rule-based templates OK)
+
+5) Search Console Page (/app/search-console)
+
+Top: integration status card
+
+Connected/disconnected
+
+Last sync
+
+Diagnostics (collapsed)
+
+Disconnected state
+
+Connect CTA (plan-gated)
+
+Explanation of benefits
+
+Connected state (mock initially)
+
+Queries table: impressions/clicks/CTR/position
+
+Pages table: landing pages performance
+
+“AI overlap” column: prompts mapped to queries (even if heuristic)
+
+6) Gap Analysis (/app/gap-analysis)
+6.1 Impact Opportunity Matrix
+
+Quadrants must never be empty (auto-fill with best available items):
+
+Quick Wins
+
+Big Bets
+
+Fill-Ins
+
+Long-Term
+
+Each item card shows:
+
+Metric Gap
+
+Expected Lift
+
+Required Inputs
+
+Owner (assignable)
+
+Confidence badge
+
+6.2 Phased Roadmap
+
+Phases:
+
+Foundation
+
+Expansion
+
+Domination
+
+Each phase includes:
+
+Entry criteria
+
+Exit criteria
+
+KPI targets
+
+Progress roll-up indicator
+
+7) Integrations (/app/integrations)
+
+Tiles for:
+
+Google Search Console
+
+Google Ads
+
+GA (optional)
+
+SERP provider
+
+YouTube
+
+Reddit
+
+X
+
+Meta (FB/IG)
+
+LinkedIn
+
+Knowledge Graph/Wikidata/Wikipedia (read-only, usually always-on)
+
+Each tile:
+
+status
+
+connect/manage button
+
+plan gating note
+
+last sync timestamp
+
+8) Settings (/app/settings)
+8.1 Brand identity
+
+Brand name, domain, logo
+
+Brand Entity Type (School/Platform/Publisher/etc.)
+
+Core topics (used for relevance weighting)
+
+8.2 Analysis scheduling
+
+Frequency selector
+
+Manual run button
+
+Last successful run timestamp
+
+Failure diagnostics (collapsed)
+
+E. Plan Gating Matrix (Frontend)
+
+Define a single PlanCapabilities object (driven from backend/admin later). Frontend uses this for:
+
+max competitors
+
+max topics
+
+max queries
+
+integrations allowed
+
+exports allowed
+
+prompt limits
+
+At minimum:
+
+Free: basic dashboard, limited prompts, limited competitors, no Search Console connect
+
+Starter: basic connect, more prompts
+
+Growth: full modules + exports
+
+Enterprise: multi-brand + audit logs + advanced insights
+
+F. Acceptance Checklist (Frontend “Done”)
+
+All /app/* pages share identical layout, typography, table styling, and filter placement.
+
+All metrics show:
+
+time window
+
+baseline comparator
+
+freshness timestamp
+
+No metric is “black box”:
+
+tooltips for score definitions
+
+assumptions block for AI traffic estimate
+
+Prompts diagnosis:
+
+dashboard → prompt detail in ≤3 clicks
+
+Empty states are meaningful:
+
+show what to connect / what to do next
+
+Plan gating is visible and consistent:
+
+disabled controls show why + upgrade path
